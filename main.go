@@ -16,9 +16,27 @@ type JsonResponse struct {
 	Message string `json:"message"`
 }
 
-func grpinfoHandle(w http.ResponseWriter, req *http.Request) {
-	groupid := req.FormValue("groupid")
-	if len(groupid) < 2 {
+type Fuwa struct {
+	Distance  float32 `json:"distance"`
+	Pic       string  `json:"pic"`
+	Gid       string  `json:"gid"`
+	Geo       string  `json:"geo"`
+	Pos       string  `json:"pos"`
+	Id        string  `json:"id"`
+	Detail    string  `json:"detail"`
+	Avatar    string  `json:"avatar"`
+	Name      string  `json:"name"`
+	Gender    string  `json:"gender"`
+	Signature string  `json:"signature"`
+	Location  string  `json:"location"`
+	Video     string  `json:"video"`
+	Hider     string  `json:"hider"`
+}
+
+func QueryHandle(w http.ResponseWriter, req *http.Request) {
+	geohash := req.FormValue("geohash")
+	radius := req.FormValue("redius")
+	if len(geohash) < 5 || len(radius) < 1 {
 		jsonres := JsonResponse{1, "argument error"}
 		b, _ := json.Marshal(jsonres)
 		io.WriteString(w, string(b))
@@ -26,6 +44,7 @@ func grpinfoHandle(w http.ResponseWriter, req *http.Request) {
 	}
 	var client *redis.Client
 	var ok bool
+	var fuwas []Fuwa
 
 	client, ok = Clients.Get()
 	if ok != true {
@@ -42,7 +61,11 @@ func grpinfoHandle(w http.ResponseWriter, req *http.Request) {
 		fmt.Println(lss)
 	}
 	client.Close()
-	jsonres := JsonResponse{0, "OK"}
+	type JsonResponseData struct {
+		JsonResponse
+		Data []Fuwa `json:data`
+	}
+	jsonres := JsonResponseData{0, "OK", fuwas}
 	b, _ := json.Marshal(jsonres)
 	io.WriteString(w, string(b))
 	return
