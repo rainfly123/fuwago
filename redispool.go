@@ -26,7 +26,7 @@ func main() {
 	c, _ := r.Str()
 	fmt.Println(c)
 
-	r = conn.Cmd("GEORADIUS", "fuwa_c", 30000)
+	r = conn.Cmd("GEORADIUS", "fuwa_c",113,23, 30000, "km")
 	fmt.Println(r)
 
 	Clients.Put(conn)
