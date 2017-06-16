@@ -15,19 +15,24 @@ func InitRedis() {
 	}
 
 }
-func main() {
-	InitRedis()
+
+func QueryVideo(longitude, latitude float32, classid string) {
 	conn, err := Clients.Get()
 	if err != nil {
 		// handle error
 	}
-
-	r := conn.Cmd("GET", "globalid")
-	c, _ := r.Str()
-	fmt.Println(c)
-
-	r = conn.Cmd("GEORADIUS", "fuwa_c", 30000)
-	fmt.Println(r)
+	r := conn.Cmd("AUTH", "aaa11bbb22")
+	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, 10, "km")
+	r.List()
+	l, _ := r.List()
+	for _, elemStr := range l {
+		fmt.Println(elemStr)
+	}
 
 	Clients.Put(conn)
+}
+
+func main() {
+	InitRedis()
+	QueryVideo(113.29, 23.08, "1")
 }
