@@ -28,7 +28,6 @@ func QueryVideo(longitude, latitude float32, classid string) {
 	for _, elemStr := range l {
 		fmt.Println(elemStr)
 	}
-
 	Clients.Put(conn)
 }
 
