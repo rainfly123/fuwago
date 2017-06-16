@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/mediocregopher/radix.v2/pool"
+	//"github.com/mediocregopher/radix.v2/redis"
 )
 
 var Clients *pool.Pool
@@ -23,7 +24,7 @@ func QueryVideo(longitude, latitude float32, classid string) {
 	}
 	r := conn.Cmd("AUTH", "aaa11bbb22")
 	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, 10, "km")
-	r.List()
+	//r = conn.Cmd("HMGET", "fuwa_c_2294", "name", "pos")
 	l, _ := r.List()
 	for _, elemStr := range l {
 		fmt.Println(elemStr)
