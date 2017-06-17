@@ -27,7 +27,7 @@ func queryVideo(w http.ResponseWriter, req *http.Request) {
 	}
 	type JsonResponseData struct {
 		JsonResponse
-		Data []VideoResp `json:data`
+		Data []VideoResp `json:"data"`
 	}
 	temp := strings.Split(geohash, "-")
 	longitude, _ := strconv.ParseFloat(temp[0], 32)
@@ -48,7 +48,7 @@ func queryStrVideo(w http.ResponseWriter, req *http.Request) {
 	}
 	type JsonResponseData struct {
 		JsonResponse
-		Data []VideoResp `json:data`
+		Data []VideoResp `json:"data"`
 	}
 	temp := strings.Split(geohash, "-")
 	longitude, _ := strconv.ParseFloat(temp[0], 32)
