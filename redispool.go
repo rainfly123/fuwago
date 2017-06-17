@@ -101,6 +101,47 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 	return results
 }
 
+func QueryStrVideo(longitude, latitude float64) []VideoResp {
+	var results []VideoResp
+	conn, err := Clients.Get()
+	if err != nil {
+		// handle error
+	}
+	r := conn.Cmd("AUTH", "aaa11bbb22")
+	r = conn.Cmd("ZREVRANGE", "video_i", 0, 4)
+	filemd5s, _ := r.List()
+	distances := make(map[int]string, 5)
+	r = conn.Cmd("GEOPOS", "video_g_i", filemd5s)
+	posa, _ := r.Array()
+	for i, elem := range posa {
+		pos, _ := elem.List()
+		lonti, _ := strconv.ParseFloat(pos[0], 32)
+		lati, _ := strconv.ParseFloat(pos[1], 32)
+		dis := EarthDistance(lati, lonti, latitude, longitude)
+		distances[i] = strconv.Itoa(dis)
+	}
+	for i, filemd5 := range filemd5s {
+		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
+		resp, _ := r.List()
+		temp := VideoResp{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], distances[i], filemd5}
+		results = append(results, temp)
+	}
+
+	r = conn.Cmd("GEORADIUS", "video_g_i", longitude, latitude, 10000, "m", "withdist", "count", "100", "ASC")
+	posa, _ = r.Array()
+	for _, elem := range posa {
+		pos, _ := elem.List()
+		filemd5 := pos[0]
+		dis := pos[1]
+		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
+		resp, _ := r.List()
+		temp := VideoResp{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], dis, filemd5}
+		results = append(results, temp)
+	}
+	defer Clients.Put(conn)
+	return results
+}
+
 /*
 func main() {
 	InitRedis()

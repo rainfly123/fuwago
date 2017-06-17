@@ -38,6 +38,27 @@ func queryVideo(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+func queryStrVideo(w http.ResponseWriter, req *http.Request) {
+	geohash := req.FormValue("geohash")
+	if len(geohash) < 5 {
+		jsonres := JsonResponse{1, "argument error"}
+		b, _ := json.Marshal(jsonres)
+		io.WriteString(w, string(b))
+		return
+	}
+	type JsonResponseData struct {
+		JsonResponse
+		Data []VideoResp `json:data`
+	}
+	temp := strings.Split(geohash, "-")
+	longitude, _ := strconv.ParseFloat(temp[0], 32)
+	latitude, _ := strconv.ParseFloat(temp[1], 32)
+	jsonres := JsonResponseData{JsonResponse{0, "OK"}, QueryStrVideo(longitude, latitude)}
+	b, _ := json.Marshal(jsonres)
+	io.WriteString(w, string(b))
+	return
+}
+
 func main() {
 
 	runtime.GOMAXPROCS(4)
@@ -45,6 +66,7 @@ func main() {
 	InitRedis()
 	fmt.Println("ok")
 	http.HandleFunc("/queryvideo", queryVideo)
-	log.Fatal(http.ListenAndServe(":1688", nil))
+	http.HandleFunc("/querystrvideo", queryStrVideo)
+	log.Fatal(http.ListenAndServe(":9999", nil))
 
 }
