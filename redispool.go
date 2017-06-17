@@ -69,6 +69,7 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 	r := conn.Cmd("AUTH", "aaa11bbb22")
 	r = conn.Cmd("ZREVRANGE", "video_"+classid, 0, 4)
 	filemd5s, _ := r.List()
+	total := len(filemd5s)
 	distances := make(map[int]string, 5)
 	r = conn.Cmd("GEOPOS", "video_g_"+classid, filemd5s)
 	posa, _ := r.Array()
@@ -89,13 +90,22 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 	r = conn.Cmd("GEORADIUS", "video_g_"+classid, longitude, latitude, 10000, "m", "withdist", "count", "100", "ASC")
 	posa, _ = r.Array()
 	for _, elem := range posa {
+		var had bool
 		pos, _ := elem.List()
 		filemd5 := pos[0]
 		dis := pos[1]
 		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
 		resp, _ := r.List()
 		temp := VideoResp{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], dis, filemd5}
-		results = append(results, temp)
+		had = false
+		for i := 0; i < total; i++ {
+			if results[i].Filemd5 == filemd5 {
+				had = true
+			}
+		}
+		if had != true {
+			results = append(results, temp)
+		}
 	}
 	defer Clients.Put(conn)
 	return results
@@ -110,6 +120,7 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 	r := conn.Cmd("AUTH", "aaa11bbb22")
 	r = conn.Cmd("ZREVRANGE", "video_i", 0, 4)
 	filemd5s, _ := r.List()
+	total := len(filemd5s)
 	distances := make(map[int]string, 5)
 	r = conn.Cmd("GEOPOS", "video_g_i", filemd5s)
 	posa, _ := r.Array()
@@ -130,13 +141,22 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 	r = conn.Cmd("GEORADIUS", "video_g_i", longitude, latitude, 10000, "m", "withdist", "count", "100", "ASC")
 	posa, _ = r.Array()
 	for _, elem := range posa {
+		var had bool
 		pos, _ := elem.List()
 		filemd5 := pos[0]
 		dis := pos[1]
 		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
 		resp, _ := r.List()
 		temp := VideoResp{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], dis, filemd5}
-		results = append(results, temp)
+		had = false
+		for i := 0; i < total; i++ {
+			if results[i].Filemd5 == filemd5 {
+				had = true
+			}
+		}
+		if had != true {
+			results = append(results, temp)
+		}
 	}
 	defer Clients.Put(conn)
 	return results
