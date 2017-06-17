@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"github.com/mediocregopher/radix.v2/pool"
 	//"github.com/mediocregopher/radix.v2/redis"
+	//"encoding/json"
 	"math"
 	"strconv"
 )
@@ -31,36 +32,78 @@ func EarthDistance(lat1, lng1, lat2, lng2 float64) int {
 	return int(dist * radius)
 }
 
-func QueryVideo(longitude, latitude float64, classid string) {
+type VideoResp struct {
+	Name      string `json:"name"`
+	Gender    string `json:"gender"`
+	Avatar    string `json:"avatar"`
+	Userid    string `json:"userid"`
+	Video     string `json:"video"`
+	Width     string `json:"width"`
+	Height    string `json:"height"`
+	Distances string `json:"distance"`
+	Filemd5   string `json:"filemd5"`
+}
+type Fuwa struct {
+	Distance  float32 `json:"distance"`
+	Pic       string  `json:"pic"`
+	Gid       string  `json:"gid"`
+	Geo       string  `json:"geo"`
+	Pos       string  `json:"pos"`
+	Id        string  `json:"id"`
+	Detail    string  `json:"detail"`
+	Avatar    string  `json:"avatar"`
+	Name      string  `json:"name"`
+	Gender    string  `json:"gender"`
+	Signature string  `json:"signature"`
+	Location  string  `json:"location"`
+	Video     string  `json:"video"`
+	Hider     string  `json:"hider"`
+}
+
+func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
+	var results []VideoResp
 	conn, err := Clients.Get()
 	if err != nil {
 		// handle error
 	}
 	r := conn.Cmd("AUTH", "aaa11bbb22")
-	//r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, 10, "km")
-	//r = conn.Cmd("HMGET", "fuwa_c_2294", "name", "pos")
 	r = conn.Cmd("ZREVRANGE", "video_"+classid, 0, 4)
 	filemd5s, _ := r.List()
-	//for _, elemStr := range filemd5s {
-	//	fmt.Println(elemStr)
-	//}
-	var distances = map[int]int{0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
+	distances := make(map[int]string, 5)
 	r = conn.Cmd("GEOPOS", "video_g_"+classid, filemd5s)
 	posa, _ := r.Array()
 	for i, elem := range posa {
 		pos, _ := elem.List()
 		lonti, _ := strconv.ParseFloat(pos[0], 32)
 		lati, _ := strconv.ParseFloat(pos[1], 32)
-		//fmt.Println(lonti, lati)
 		dis := EarthDistance(lati, lonti, latitude, longitude)
-		distances[i] = dis
+		distances[i] = strconv.Itoa(dis)
 	}
-	fmt.Println(distances)
+	for i, filemd5 := range filemd5s {
+		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
+		resp, _ := r.List()
+		temp := VideoResp{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], distances[i], filemd5}
+		results = append(results, temp)
+	}
 
+	r = conn.Cmd("GEORADIUS", "video_g_"+classid, longitude, latitude, 10000, "m", "withdist", "count", "100", "ASC")
+	posa, _ = r.Array()
+	for _, elem := range posa {
+		pos, _ := elem.List()
+		filemd5 := pos[0]
+		dis := pos[1]
+		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
+		resp, _ := r.List()
+		temp := VideoResp{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], dis, filemd5}
+		results = append(results, temp)
+	}
 	defer Clients.Put(conn)
+	return results
 }
 
+/*
 func main() {
 	InitRedis()
-	QueryVideo(113.29, 23.08, "1")
+	fmt.Println(QueryVideo(113.301, 23.0827, "1"))
 }
+*/
