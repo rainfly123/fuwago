@@ -1,10 +1,10 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
 	"github.com/mediocregopher/radix.v2/pool"
 	//"github.com/mediocregopher/radix.v2/redis"
-	//"encoding/json"
+	"encoding/json"
 	"math"
 	"strconv"
 )
@@ -49,7 +49,6 @@ type Fuwa struct {
 	Gid       string  `json:"gid"`
 	Geo       string  `json:"geo"`
 	Pos       string  `json:"pos"`
-	Id        string  `json:"id"`
 	Detail    string  `json:"detail"`
 	Avatar    string  `json:"avatar"`
 	Name      string  `json:"name"`
@@ -58,6 +57,16 @@ type Fuwa struct {
 	Location  string  `json:"location"`
 	Video     string  `json:"video"`
 	Hider     string  `json:"hider"`
+}
+
+type nearFuwa struct {
+	Fuwa
+	Id string `json:"id"`
+}
+
+type farFuwa struct {
+	Fuwa
+	Number uint32 `json:"number"`
 }
 
 func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
@@ -162,9 +171,42 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 	return results
 }
 
-/*
-func main() {
-	InitRedis()
-	fmt.Println(QueryVideo(113.301, 23.0827, "1"))
+const HOWFAR = 300
+
+func QueryV2(longtitude, latitude float64, radius, biggest uint32) map[string]interface{} {
+	var farfuwa []farFuwa
+	var nearfuwa []nearFuwa
+	result := make(map[string]interface{}, 2)
+
+	return result
 }
-*/
+
+func QueryStrV2(longtitude, latitude float64, radius, biggest uint32) map[string]interface{} {
+	var farfuwa []farFuwa
+	var nearfuwa []nearFuwa
+	result := make(map[string]interface{}, 2)
+
+	return result
+}
+func QueryV3(longtitude, latitude float64, radius, biggest uint32, creator uint32) map[string]interface{} {
+	var farfuwa []farFuwa
+	var nearfuwa []nearFuwa
+	result := make(map[string]interface{}, 2)
+
+	return result
+}
+
+func QueryStrV3(longtitude, latitude float64, radius, biggest uint32, creator uint32) map[string]interface{} {
+	var farfuwa []farFuwa
+	var nearfuwa []nearFuwa
+	result := make(map[string]interface{}, 2)
+
+	return result
+}
+
+func main() {
+	//InitRedis()
+	//fmt.Println(QueryVideo(113.301, 23.0827, "1"))
+	b, _ := json.Marshal(QueryV2(0, 0, 0, 0))
+	fmt.Println(string(b))
+}
