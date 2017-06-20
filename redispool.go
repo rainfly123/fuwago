@@ -173,11 +173,38 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 
 const HOWFAR = 300
 
+type GEORADIUSRESP struct {
+	Fuwagid  string
+	Distance string
+}
+type ByFuwagid []GEORADIUSRESP
+
+func (a ByFuwagid) Len() int           { return len(a) }
+func (a ByFuwagid) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByFuwagid) Less(i, j int) bool { return a[i].Fuwagid[7:] < a[j].Fuwagid[7:] }
+
 func QueryV2(longtitude, latitude float64, radius uint32, biggest string) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
-	result := make(map[string]interface{}, 2)
+	var response GEORADIUSRESP
 
+	result := make(map[string]interface{}, 2)
+	conn, err := Clients.Get()
+	if err != nil {
+		// handle error
+	}
+
+	r := conn.Cmd("AUTH", "aaa11bbb22")
+	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist")
+	nelem, _ = r.Array()
+	for _, elem := range nelem {
+		temp, _ := elem.List()
+		if temp[0][7:] < biggest && temp[1] < HOWFAR {
+			fuwa := GEORADIUSRESP{temp[0], temp[1]}
+			response = append(response, fuwa)
+		}
+
+	}
 	return result
 }
 
