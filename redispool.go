@@ -6,6 +6,7 @@ import (
 	//"github.com/mediocregopher/radix.v2/redis"
 	"encoding/json"
 	"math"
+	"sort"
 	"strconv"
 )
 
@@ -44,19 +45,19 @@ type VideoResp struct {
 	Filemd5   string `json:"filemd5"`
 }
 type Fuwa struct {
-	Distance  float32 `json:"distance"`
-	Pic       string  `json:"pic"`
-	Gid       string  `json:"gid"`
-	Geo       string  `json:"geo"`
 	Pos       string  `json:"pos"`
 	Detail    string  `json:"detail"`
-	Avatar    string  `json:"avatar"`
+	Pic       string  `json:"pic"`
 	Name      string  `json:"name"`
+	Avatar    string  `json:"avatar"`
 	Gender    string  `json:"gender"`
 	Signature string  `json:"signature"`
 	Location  string  `json:"location"`
 	Video     string  `json:"video"`
 	Hider     string  `json:"hider"`
+	Geo       string  `json:"geo"`
+	Distance  float32 `json:"distance"`
+	Gid       string  `json:"gid"`
 }
 
 type nearFuwa struct {
@@ -186,8 +187,10 @@ func (a ByFuwagid) Less(i, j int) bool { return a[i].Fuwagid[7:] < a[j].Fuwagid[
 func QueryV2(longtitude, latitude float64, radius uint32, biggest string) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
-	var response GEORADIUSRESP
+	var nresponse GEORADIUSRESP
+	var fresponse GEORADIUSRESP
 
+	count := make(map[string]int, 300)
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
 	if err != nil {
@@ -199,12 +202,66 @@ func QueryV2(longtitude, latitude float64, radius uint32, biggest string) map[st
 	nelem, _ = r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
-		if temp[0][7:] < biggest && temp[1] < HOWFAR {
+		if temp[1] < HOWFAR {
+			if temp[0][7:] < biggest && len(response) <= 100 {
+				fuwa := GEORADIUSRESP{temp[0], temp[1]}
+				nresponse = append(nresponse, fuwa)
+			}
+		} else {
 			fuwa := GEORADIUSRESP{temp[0], temp[1]}
-			response = append(response, fuwa)
+			fresponse = append(fresponse, fuwa)
 		}
 
 	}
+	sort.Sort(nresponse)
+	for _, v := range nresponse {
+		var geo string
+		fuwa, dis := v[0], v[1]
+		r = conn.Cmd("HMGET", fuwa, "detail", "pos", "pic", "name", "avatar",
+			"gender", "signature", "location", "video", "owner", "id")
+		resp, _ := r.List()
+
+		r = conn.Cmd("GEOPOS", "fuwa_c", fuwa)
+		posa, _ := r.Array()
+		for _, elem := range posa {
+			pos, _ := elem.List()
+			geo = pos[0] + "-" + pos[1]
+		}
+
+		temp := nearFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
+			resp[8], resp[9]}, geo, dis, fuwa, resp[10]}
+		nearfuwa = append(nearfuwa, temp)
+	}
+	for _, v := range fresponse {
+		var geo string
+		fuwa, dis := v[0], v[1]
+
+		r = conn.Cmd("GEOPOS", "fuwa_c", fuwa)
+		posa, _ := r.Array()
+		for _, elem := range posa {
+			pos, _ := elem.List()
+			geo = pos[0] + "-" + pos[1]
+		}
+		number := count[geo]
+		if number {
+			count[geo]["number"] += 1
+			for i, shit := range farfuwa {
+				if shit.geo == geo {
+					farfuwa[i].number += 1
+				}
+			}
+		}
+
+		r = conn.Cmd("HMGET", fuwa, "detail", "pos", "pic", "name", "avatar",
+			"gender", "signature", "location", "video", "owner")
+		resp, _ := r.List()
+
+		temp := farFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
+			resp[8], resp[9]}, geo, dis, fuwa, 1}
+		farfuwa = append(farfuwa, temp)
+	}
+	result["near"] = nearfuwa
+	result["far"] = farfuwa
 	return result
 }
 
