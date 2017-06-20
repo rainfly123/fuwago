@@ -173,7 +173,7 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 
 const HOWFAR = 300
 
-func QueryV2(longtitude, latitude float64, radius, biggest uint32) map[string]interface{} {
+func QueryV2(longtitude, latitude float64, radius uint32, biggest string) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
 	result := make(map[string]interface{}, 2)
@@ -181,14 +181,14 @@ func QueryV2(longtitude, latitude float64, radius, biggest uint32) map[string]in
 	return result
 }
 
-func QueryStrV2(longtitude, latitude float64, radius, biggest uint32) map[string]interface{} {
+func QueryStrV2(longtitude, latitude float64, radius uint32, biggest string) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
 	result := make(map[string]interface{}, 2)
 
 	return result
 }
-func QueryV3(longtitude, latitude float64, radius, biggest uint32, creator uint32) map[string]interface{} {
+func QueryV3(longtitude, latitude float64, radius uint32, biggest string, creator uint32) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
 	result := make(map[string]interface{}, 2)
@@ -196,7 +196,7 @@ func QueryV3(longtitude, latitude float64, radius, biggest uint32, creator uint3
 	return result
 }
 
-func QueryStrV3(longtitude, latitude float64, radius, biggest uint32, creator uint32) map[string]interface{} {
+func QueryStrV3(longtitude, latitude float64, radius uint32, biggest string, creator uint32) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
 	result := make(map[string]interface{}, 2)
@@ -207,6 +207,6 @@ func QueryStrV3(longtitude, latitude float64, radius, biggest uint32, creator ui
 func main() {
 	//InitRedis()
 	//fmt.Println(QueryVideo(113.301, 23.0827, "1"))
-	b, _ := json.Marshal(QueryV2(0, 0, 0, 0))
+	b, _ := json.Marshal(QueryV2(0, 0, 0, "0"))
 	fmt.Println(string(b))
 }
