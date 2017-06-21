@@ -352,21 +352,174 @@ func QueryStrV2(longitude, latitude float64, radius uint32, biggest int) map[str
 	return result
 }
 
-func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator uint32) map[string]interface{} {
+func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator string) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
-	result := make(map[string]interface{}, 2)
+	var nresponse ByFuwagid
+	var fresponse ByFuwagid
 
+	result := make(map[string]interface{}, 2)
+	conn, err := Clients.Get()
+	if err != nil {
+		// handle error
+	}
+
+	r := conn.Cmd("AUTH", "aaa11bbb22")
+	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist")
+	nelem, _ := r.Array()
+	for _, elem := range nelem {
+		temp, _ := elem.List()
+		c, _ := conn.Cmd("HGET", temp[0], "creator").Str()
+		if c != creator {
+			continue
+		}
+		howfar, _ := strconv.ParseFloat(temp[1], 32)
+		if howfar < HOWFAR {
+			fuwagidn, _ := strconv.Atoi(temp[1][7:])
+			if fuwagidn < biggest && len(nresponse) <= 100 {
+				fuwa := GEORADIUSRESP{temp[0], temp[1]}
+				nresponse = append(nresponse, fuwa)
+			}
+		} else if len(fresponse) <= 300 {
+			fuwa := GEORADIUSRESP{temp[0], temp[1]}
+			fresponse = append(fresponse, fuwa)
+		}
+
+	}
+	sort.Sort(nresponse)
+	for _, v := range nresponse {
+		var geo string
+		r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
+			"gender", "signature", "location", "video", "owner", "id")
+		resp, _ := r.List()
+
+		r = conn.Cmd("GEOPOS", "fuwa_c", v.Fuwagid)
+		posa, _ := r.Array()
+		for _, elem := range posa {
+			pos, _ := elem.List()
+			geo = pos[0] + "-" + pos[1]
+		}
+		dis, _ := strconv.ParseFloat(v.Distance, 32)
+
+		temp := nearFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
+			resp[8], resp[9], geo, float32(dis)}, resp[10], v.Fuwagid}
+		nearfuwa = append(nearfuwa, temp)
+	}
+	for _, v := range fresponse {
+		var geo string
+		var has bool
+		has = false
+		r = conn.Cmd("GEOPOS", "fuwa_c", v.Fuwagid)
+		posa, _ := r.Array()
+		for _, elem := range posa {
+			pos, _ := elem.List()
+			geo = pos[0] + "-" + pos[1]
+		}
+		for i, shit := range farfuwa {
+			if shit.Geo == geo {
+				farfuwa[i].Number += 1
+				has = true
+			}
+		}
+		if has == false {
+
+			r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
+				"gender", "signature", "location", "video", "owner")
+			resp, _ := r.List()
+
+			dis, _ := strconv.ParseFloat(v.Distance, 32)
+			temp := farFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
+				resp[8], resp[9], geo, float32(dis)}, 1}
+			farfuwa = append(farfuwa, temp)
+		}
+	}
 	result["near"] = nearfuwa
 	result["far"] = farfuwa
 	return result
+
 }
 
-func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator uint32) map[string]interface{} {
+func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator string) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
-	result := make(map[string]interface{}, 2)
+	var nresponse ByFuwagid
+	var fresponse ByFuwagid
 
+	result := make(map[string]interface{}, 2)
+	conn, err := Clients.Get()
+	if err != nil {
+		// handle error
+	}
+
+	r := conn.Cmd("AUTH", "aaa11bbb22")
+	r = conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist")
+	nelem, _ := r.Array()
+	for _, elem := range nelem {
+		temp, _ := elem.List()
+		c, _ := conn.Cmd("HGET", temp[0], "creator").Str()
+		if c != creator {
+			continue
+		}
+		howfar, _ := strconv.ParseFloat(temp[1], 32)
+		if howfar < HOWFAR {
+			fuwagidn, _ := strconv.Atoi(temp[1][7:])
+			if fuwagidn < biggest && len(nresponse) <= 100 {
+				fuwa := GEORADIUSRESP{temp[0], temp[1]}
+				nresponse = append(nresponse, fuwa)
+			}
+		} else if len(fresponse) <= 300 {
+			fuwa := GEORADIUSRESP{temp[0], temp[1]}
+			fresponse = append(fresponse, fuwa)
+		}
+
+	}
+	sort.Sort(nresponse)
+	for _, v := range nresponse {
+		var geo string
+		r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
+			"gender", "signature", "location", "video", "owner", "id")
+		resp, _ := r.List()
+
+		r = conn.Cmd("GEOPOS", "fuwa_i", v.Fuwagid)
+		posa, _ := r.Array()
+		for _, elem := range posa {
+			pos, _ := elem.List()
+			geo = pos[0] + "-" + pos[1]
+		}
+		dis, _ := strconv.ParseFloat(v.Distance, 32)
+
+		temp := nearFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
+			resp[8], resp[9], geo, float32(dis)}, resp[10], v.Fuwagid}
+		nearfuwa = append(nearfuwa, temp)
+	}
+	for _, v := range fresponse {
+		var geo string
+		var has bool
+		has = false
+		r = conn.Cmd("GEOPOS", "fuwa_i", v.Fuwagid)
+		posa, _ := r.Array()
+		for _, elem := range posa {
+			pos, _ := elem.List()
+			geo = pos[0] + "-" + pos[1]
+		}
+		for i, shit := range farfuwa {
+			if shit.Geo == geo {
+				farfuwa[i].Number += 1
+				has = true
+			}
+		}
+		if has == false {
+
+			r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
+				"gender", "signature", "location", "video", "owner")
+			resp, _ := r.List()
+
+			dis, _ := strconv.ParseFloat(v.Distance, 32)
+			temp := farFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
+				resp[8], resp[9], geo, float32(dis)}, 1}
+			farfuwa = append(farfuwa, temp)
+		}
+	}
 	result["near"] = nearfuwa
 	result["far"] = farfuwa
 	return result

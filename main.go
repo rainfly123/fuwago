@@ -113,6 +113,62 @@ func queryStrV2Handler(w http.ResponseWriter, req *http.Request) {
 	io.WriteString(w, string(b))
 	return
 }
+func queryV3Handler(w http.ResponseWriter, req *http.Request) {
+	geohash := req.FormValue("geohash")
+	radius := req.FormValue("radius")
+	biggest := req.FormValue("biggest")
+	creator := req.FormValue("userid")
+	if len(geohash) < 5 || len(biggest) < 1 || len(radius) < 2 || len(creator) < 5 {
+		jsonres := JsonResponse{1, "argument error"}
+		b, _ := json.Marshal(jsonres)
+		io.WriteString(w, string(b))
+		return
+	}
+	type JsonResponseData struct {
+		JsonResponse
+		Data map[string]interface{} `json:"data"`
+	}
+	temp := strings.Split(geohash, "-")
+	longitude, _ := strconv.ParseFloat(temp[0], 32)
+	latitude, _ := strconv.ParseFloat(temp[1], 32)
+	radiusint, _ := strconv.Atoi(radius)
+	big, _ := strconv.Atoi(biggest)
+	if big == 0 {
+		big = 999999999
+	}
+	jsonres := JsonResponseData{JsonResponse{0, "OK"}, QueryV3(longitude, latitude, uint32(radiusint), big, creator)}
+	b, _ := json.Marshal(jsonres)
+	io.WriteString(w, string(b))
+	return
+}
+func queryStrV3Handler(w http.ResponseWriter, req *http.Request) {
+	geohash := req.FormValue("geohash")
+	radius := req.FormValue("radius")
+	biggest := req.FormValue("biggest")
+	creator := req.FormValue("userid")
+	if len(geohash) < 5 || len(biggest) < 1 || len(radius) < 2 || len(creator) < 5 {
+		jsonres := JsonResponse{1, "argument error"}
+		b, _ := json.Marshal(jsonres)
+		io.WriteString(w, string(b))
+		return
+	}
+	type JsonResponseData struct {
+		JsonResponse
+		Data map[string]interface{} `json:"data"`
+	}
+	temp := strings.Split(geohash, "-")
+	longitude, _ := strconv.ParseFloat(temp[0], 32)
+	latitude, _ := strconv.ParseFloat(temp[1], 32)
+	radiusint, _ := strconv.Atoi(radius)
+	big, _ := strconv.Atoi(biggest)
+	if big == 0 {
+		big = 999999999
+	}
+	jsonres := JsonResponseData{JsonResponse{0, "OK"}, QueryStrV3(longitude, latitude, uint32(radiusint), big, creator)}
+	b, _ := json.Marshal(jsonres)
+	io.WriteString(w, string(b))
+	return
+}
 
 func main() {
 
@@ -124,6 +180,8 @@ func main() {
 	http.HandleFunc("/querystrvideo", queryStrVideo)
 	http.HandleFunc("/queryv2", queryV2Handler)
 	http.HandleFunc("/querystrangerv2", queryStrV2Handler)
+	http.HandleFunc("/queryv3", queryV3Handler)
+	http.HandleFunc("/querystrangerv3", queryStrV3Handler)
 	log.Fatal(http.ListenAndServe(":9999", nil))
 
 }
