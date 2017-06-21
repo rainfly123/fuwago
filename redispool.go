@@ -34,15 +34,15 @@ func EarthDistance(lat1, lng1, lat2, lng2 float64) int {
 }
 
 type VideoResp struct {
-	Name      string `json:"name"`
-	Gender    string `json:"gender"`
-	Avatar    string `json:"avatar"`
-	Userid    string `json:"userid"`
-	Video     string `json:"video"`
-	Width     string `json:"width"`
-	Height    string `json:"height"`
-	Distances string `json:"distance"`
-	Filemd5   string `json:"filemd5"`
+	Name     string `json:"name"`
+	Gender   string `json:"gender"`
+	Avatar   string `json:"avatar"`
+	Userid   string `json:"userid"`
+	Video    string `json:"video"`
+	Width    string `json:"width"`
+	Height   string `json:"height"`
+	Distance string `json:"distance"`
+	Filemd5  string `json:"filemd5"`
 }
 type Fuwa struct {
 	Pos       string  `json:"pos"`
@@ -57,12 +57,12 @@ type Fuwa struct {
 	Hider     string  `json:"hider"`
 	Geo       string  `json:"geo"`
 	Distance  float32 `json:"distance"`
-	Gid       string  `json:"gid"`
 }
 
 type nearFuwa struct {
 	Fuwa
-	Id string `json:"id"`
+	Id  string `json:"id"`
+	Gid string `json:"gid"`
 }
 
 type farFuwa struct {
@@ -184,13 +184,12 @@ func (a ByFuwagid) Len() int           { return len(a) }
 func (a ByFuwagid) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByFuwagid) Less(i, j int) bool { return a[i].Fuwagid[7:] < a[j].Fuwagid[7:] }
 
-func QueryV2(longtitude, latitude float64, radius uint32, biggest string) map[string]interface{} {
+func QueryV2(longitude, latitude float64, radius uint32, biggest string) map[string]interface{} {
 	var farfuwa []farFuwa
 	var nearfuwa []nearFuwa
-	var nresponse GEORADIUSRESP
-	var fresponse GEORADIUSRESP
+	var nresponse ByFuwagid
+	var fresponse ByFuwagid
 
-	count := make(map[string]int, 300)
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
 	if err != nil {
@@ -199,15 +198,16 @@ func QueryV2(longtitude, latitude float64, radius uint32, biggest string) map[st
 
 	r := conn.Cmd("AUTH", "aaa11bbb22")
 	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist")
-	nelem, _ = r.Array()
+	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
-		if temp[1] < HOWFAR {
-			if temp[0][7:] < biggest && len(response) <= 100 {
+		howfar, _ := strconv.ParseFloat(temp[1], 32)
+		if howfar < HOWFAR {
+			if temp[0][7:] < biggest && len(nresponse) <= 100 {
 				fuwa := GEORADIUSRESP{temp[0], temp[1]}
 				nresponse = append(nresponse, fuwa)
 			}
-		} else {
+		} else if len(fresponse) <= 300 {
 			fuwa := GEORADIUSRESP{temp[0], temp[1]}
 			fresponse = append(fresponse, fuwa)
 		}
@@ -216,49 +216,49 @@ func QueryV2(longtitude, latitude float64, radius uint32, biggest string) map[st
 	sort.Sort(nresponse)
 	for _, v := range nresponse {
 		var geo string
-		fuwa, dis := v[0], v[1]
-		r = conn.Cmd("HMGET", fuwa, "detail", "pos", "pic", "name", "avatar",
+		r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
 			"gender", "signature", "location", "video", "owner", "id")
 		resp, _ := r.List()
 
-		r = conn.Cmd("GEOPOS", "fuwa_c", fuwa)
+		r = conn.Cmd("GEOPOS", "fuwa_c", v.Fuwagid)
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
 			geo = pos[0] + "-" + pos[1]
 		}
+		dis, _ := strconv.ParseFloat(v.Distance, 32)
 
 		temp := nearFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
-			resp[8], resp[9]}, geo, dis, fuwa, resp[10]}
+			resp[8], resp[9], geo, float32(dis)}, resp[10], v.Fuwagid}
 		nearfuwa = append(nearfuwa, temp)
 	}
 	for _, v := range fresponse {
 		var geo string
-		fuwa, dis := v[0], v[1]
-
-		r = conn.Cmd("GEOPOS", "fuwa_c", fuwa)
+		var has bool
+		has = false
+		r = conn.Cmd("GEOPOS", "fuwa_c", v.Fuwagid)
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
 			geo = pos[0] + "-" + pos[1]
 		}
-		number := count[geo]
-		if number {
-			count[geo]["number"] += 1
-			for i, shit := range farfuwa {
-				if shit.geo == geo {
-					farfuwa[i].number += 1
-				}
+		for i, shit := range farfuwa {
+			if shit.Geo == geo {
+				farfuwa[i].Number += 1
+				has = true
 			}
 		}
+		if has == false {
 
-		r = conn.Cmd("HMGET", fuwa, "detail", "pos", "pic", "name", "avatar",
-			"gender", "signature", "location", "video", "owner")
-		resp, _ := r.List()
+			r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
+				"gender", "signature", "location", "video", "owner")
+			resp, _ := r.List()
 
-		temp := farFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
-			resp[8], resp[9]}, geo, dis, fuwa, 1}
-		farfuwa = append(farfuwa, temp)
+			dis, _ := strconv.ParseFloat(v.Distance, 32)
+			temp := farFuwa{Fuwa{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], resp[7],
+				resp[8], resp[9], geo, float32(dis)}, 1}
+			farfuwa = append(farfuwa, temp)
+		}
 	}
 	result["near"] = nearfuwa
 	result["far"] = farfuwa
@@ -270,6 +270,8 @@ func QueryStrV2(longtitude, latitude float64, radius uint32, biggest string) map
 	var nearfuwa []nearFuwa
 	result := make(map[string]interface{}, 2)
 
+	result["near"] = nearfuwa
+	result["far"] = farfuwa
 	return result
 }
 func QueryV3(longtitude, latitude float64, radius uint32, biggest string, creator uint32) map[string]interface{} {
@@ -277,6 +279,8 @@ func QueryV3(longtitude, latitude float64, radius uint32, biggest string, creato
 	var nearfuwa []nearFuwa
 	result := make(map[string]interface{}, 2)
 
+	result["near"] = nearfuwa
+	result["far"] = farfuwa
 	return result
 }
 
@@ -285,12 +289,16 @@ func QueryStrV3(longtitude, latitude float64, radius uint32, biggest string, cre
 	var nearfuwa []nearFuwa
 	result := make(map[string]interface{}, 2)
 
+	result["near"] = nearfuwa
+	result["far"] = farfuwa
 	return result
 }
 
 func main() {
-	//InitRedis()
+	InitRedis()
 	//fmt.Println(QueryVideo(113.301, 23.0827, "1"))
-	b, _ := json.Marshal(QueryV2(0, 0, 0, "0"))
+	//b, _ := json.Marshal(QueryV2(0, 0, 0, "0"))
+	//fmt.Println(string(b))
+	b, _ := json.Marshal(QueryV2(113.301, 23.0827, 10000, "300000"))
 	fmt.Println(string(b))
 }
