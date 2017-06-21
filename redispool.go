@@ -1,7 +1,7 @@
 package main
 
 import (
-	//	"fmt"
+	"fmt"
 	"github.com/mediocregopher/radix.v2/pool"
 	//"github.com/mediocregopher/radix.v2/redis"
 	//"encoding/json"
@@ -207,7 +207,7 @@ func QueryV2(longitude, latitude float64, radius uint32, biggest int) map[string
 		temp, _ := elem.List()
 		howfar, _ := strconv.ParseFloat(temp[1], 32)
 		if howfar < HOWFAR {
-			fuwagidn, _ := strconv.Atoi(temp[1][7:])
+			fuwagidn, _ := strconv.Atoi(temp[0][7:])
 			if fuwagidn < biggest && len(nresponse) <= 100 {
 				fuwa := GEORADIUSRESP{temp[0], temp[1]}
 				nresponse = append(nresponse, fuwa)
@@ -218,7 +218,7 @@ func QueryV2(longitude, latitude float64, radius uint32, biggest int) map[string
 		}
 
 	}
-	sort.Sort(nresponse)
+	sort.Sort(sort.Reverse(nresponse))
 	for _, v := range nresponse {
 		var geo string
 		r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
@@ -229,7 +229,9 @@ func QueryV2(longitude, latitude float64, radius uint32, biggest int) map[string
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
-			geo = pos[0] + "-" + pos[1]
+			long, _ := strconv.ParseFloat(pos[0], 32)
+			lat, _ := strconv.ParseFloat(pos[1], 32)
+			geo = fmt.Sprintf("%f-%f", long, lat)
 		}
 		dis, _ := strconv.ParseFloat(v.Distance, 32)
 
@@ -245,7 +247,9 @@ func QueryV2(longitude, latitude float64, radius uint32, biggest int) map[string
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
-			geo = pos[0] + "-" + pos[1]
+			long, _ := strconv.ParseFloat(pos[0], 32)
+			lat, _ := strconv.ParseFloat(pos[1], 32)
+			geo = fmt.Sprintf("%f-%f", long, lat)
 		}
 		for i, shit := range farfuwa {
 			if shit.Geo == geo {
@@ -289,7 +293,7 @@ func QueryStrV2(longitude, latitude float64, radius uint32, biggest int) map[str
 		temp, _ := elem.List()
 		howfar, _ := strconv.ParseFloat(temp[1], 32)
 		if howfar < HOWFAR {
-			fuwagidn, _ := strconv.Atoi(temp[1][7:])
+			fuwagidn, _ := strconv.Atoi(temp[0][7:])
 			if fuwagidn < biggest && len(nresponse) <= 100 {
 				fuwa := GEORADIUSRESP{temp[0], temp[1]}
 				nresponse = append(nresponse, fuwa)
@@ -300,7 +304,7 @@ func QueryStrV2(longitude, latitude float64, radius uint32, biggest int) map[str
 		}
 
 	}
-	sort.Sort(nresponse)
+	sort.Sort(sort.Reverse(nresponse))
 	for _, v := range nresponse {
 		var geo string
 		r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
@@ -311,7 +315,9 @@ func QueryStrV2(longitude, latitude float64, radius uint32, biggest int) map[str
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
-			geo = pos[0] + "-" + pos[1]
+			long, _ := strconv.ParseFloat(pos[0], 32)
+			lat, _ := strconv.ParseFloat(pos[1], 32)
+			geo = fmt.Sprintf("%f-%f", long, lat)
 		}
 		dis, _ := strconv.ParseFloat(v.Distance, 32)
 
@@ -327,7 +333,9 @@ func QueryStrV2(longitude, latitude float64, radius uint32, biggest int) map[str
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
-			geo = pos[0] + "-" + pos[1]
+			long, _ := strconv.ParseFloat(pos[0], 32)
+			lat, _ := strconv.ParseFloat(pos[1], 32)
+			geo = fmt.Sprintf("%f-%f", long, lat)
 		}
 		for i, shit := range farfuwa {
 			if shit.Geo == geo {
@@ -373,9 +381,9 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 		if c != creator {
 			continue
 		}
-		howfar, _ := strconv.ParseFloat(temp[1], 32)
+		howfar, _ := strconv.ParseFloat(temp[0], 32)
 		if howfar < HOWFAR {
-			fuwagidn, _ := strconv.Atoi(temp[1][7:])
+			fuwagidn, _ := strconv.Atoi(temp[0][7:])
 			if fuwagidn < biggest && len(nresponse) <= 100 {
 				fuwa := GEORADIUSRESP{temp[0], temp[1]}
 				nresponse = append(nresponse, fuwa)
@@ -386,7 +394,7 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 		}
 
 	}
-	sort.Sort(nresponse)
+	sort.Sort(sort.Reverse(nresponse))
 	for _, v := range nresponse {
 		var geo string
 		r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
@@ -397,7 +405,9 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
-			geo = pos[0] + "-" + pos[1]
+			long, _ := strconv.ParseFloat(pos[0], 32)
+			lat, _ := strconv.ParseFloat(pos[1], 32)
+			geo = fmt.Sprintf("%f-%f", long, lat)
 		}
 		dis, _ := strconv.ParseFloat(v.Distance, 32)
 
@@ -413,7 +423,9 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
-			geo = pos[0] + "-" + pos[1]
+			long, _ := strconv.ParseFloat(pos[0], 32)
+			lat, _ := strconv.ParseFloat(pos[1], 32)
+			geo = fmt.Sprintf("%f-%f", long, lat)
 		}
 		for i, shit := range farfuwa {
 			if shit.Geo == geo {
@@ -462,7 +474,7 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 		}
 		howfar, _ := strconv.ParseFloat(temp[1], 32)
 		if howfar < HOWFAR {
-			fuwagidn, _ := strconv.Atoi(temp[1][7:])
+			fuwagidn, _ := strconv.Atoi(temp[0][7:])
 			if fuwagidn < biggest && len(nresponse) <= 100 {
 				fuwa := GEORADIUSRESP{temp[0], temp[1]}
 				nresponse = append(nresponse, fuwa)
@@ -473,7 +485,7 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 		}
 
 	}
-	sort.Sort(nresponse)
+	sort.Sort(sort.Reverse(nresponse))
 	for _, v := range nresponse {
 		var geo string
 		r = conn.Cmd("HMGET", v.Fuwagid, "detail", "pos", "pic", "name", "avatar",
@@ -484,7 +496,9 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
-			geo = pos[0] + "-" + pos[1]
+			long, _ := strconv.ParseFloat(pos[0], 32)
+			lat, _ := strconv.ParseFloat(pos[1], 32)
+			geo = fmt.Sprintf("%f-%f", long, lat)
 		}
 		dis, _ := strconv.ParseFloat(v.Distance, 32)
 
@@ -500,7 +514,9 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 		posa, _ := r.Array()
 		for _, elem := range posa {
 			pos, _ := elem.List()
-			geo = pos[0] + "-" + pos[1]
+			long, _ := strconv.ParseFloat(pos[0], 32)
+			lat, _ := strconv.ParseFloat(pos[1], 32)
+			geo = fmt.Sprintf("%f-%f", long, lat)
 		}
 		for i, shit := range farfuwa {
 			if shit.Geo == geo {
