@@ -180,9 +180,13 @@ type GEORADIUSRESP struct {
 }
 type ByFuwagid []GEORADIUSRESP
 
-func (a ByFuwagid) Len() int           { return len(a) }
-func (a ByFuwagid) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByFuwagid) Less(i, j int) bool { return a[i].Fuwagid[7:] < a[j].Fuwagid[7:] }
+func (a ByFuwagid) Len() int      { return len(a) }
+func (a ByFuwagid) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByFuwagid) Less(i, j int) bool {
+	m, _ := strconv.Atoi(a[i].Fuwagid[7:])
+	n, _ := strconv.Atoi(a[j].Fuwagid[7:])
+	return m < n
+}
 
 func QueryV2(longitude, latitude float64, radius uint32, biggest string) map[string]interface{} {
 	var farfuwa []farFuwa
