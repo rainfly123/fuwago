@@ -59,6 +59,34 @@ func queryStrVideo(w http.ResponseWriter, req *http.Request) {
 	return
 }
 
+func queryV2Handler(w http.ResponseWriter, req *http.Request) {
+	geohash := req.FormValue("geohash")
+	radius := req.FormValue("radius")
+	biggest := req.FormValue("biggest")
+	if len(geohash) < 5 || len(biggest) < 1 || len(radius) < 2 {
+		jsonres := JsonResponse{1, "argument error"}
+		b, _ := json.Marshal(jsonres)
+		io.WriteString(w, string(b))
+		return
+	}
+	type JsonResponseData struct {
+		JsonResponse
+		Data map[string]interface{} `json:"data"`
+	}
+	temp := strings.Split(geohash, "-")
+	longitude, _ := strconv.ParseFloat(temp[0], 32)
+	latitude, _ := strconv.ParseFloat(temp[1], 32)
+	radiusint, _ := strconv.Atoi(radius)
+	big, _ := strconv.Atoi(biggest)
+	if big == 0 {
+		big = 999999999
+	}
+	jsonres := JsonResponseData{JsonResponse{0, "OK"}, QueryV2(longitude, latitude, uint32(radiusint), big)}
+	b, _ := json.Marshal(jsonres)
+	io.WriteString(w, string(b))
+	return
+}
+
 func main() {
 
 	runtime.GOMAXPROCS(4)
@@ -67,6 +95,7 @@ func main() {
 	fmt.Println("ok")
 	http.HandleFunc("/queryvideo", queryVideo)
 	http.HandleFunc("/querystrvideo", queryStrVideo)
+	http.HandleFunc("/queryv2", queryV2Handler)
 	log.Fatal(http.ListenAndServe(":9999", nil))
 
 }
