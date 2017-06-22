@@ -201,7 +201,7 @@ func QueryV2(longitude, latitude float64, radius uint32, biggest int) map[string
 	}
 
 	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist")
+	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist", "count", "500")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
@@ -287,7 +287,7 @@ func QueryStrV2(longitude, latitude float64, radius uint32, biggest int) map[str
 	}
 
 	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist")
+	r = conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist", "count", "500")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
@@ -373,7 +373,7 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 	}
 
 	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist")
+	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist", "count", "500")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
@@ -464,7 +464,7 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 	}
 
 	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist")
+	r = conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist", "count", "500")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
