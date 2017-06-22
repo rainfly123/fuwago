@@ -118,7 +118,7 @@ func queryV3Handler(w http.ResponseWriter, req *http.Request) {
 	radius := req.FormValue("radius")
 	biggest := req.FormValue("biggest")
 	creator := req.FormValue("userid")
-	if len(geohash) < 5 || len(biggest) < 1 || len(radius) < 2 || len(creator) < 5 {
+	if len(geohash) < 5 || len(biggest) < 1 || len(radius) < 1 || len(creator) < 5 {
 		jsonres := JsonResponse{1, "argument error"}
 		b, _ := json.Marshal(jsonres)
 		io.WriteString(w, string(b))
@@ -146,7 +146,7 @@ func queryStrV3Handler(w http.ResponseWriter, req *http.Request) {
 	radius := req.FormValue("radius")
 	biggest := req.FormValue("biggest")
 	creator := req.FormValue("userid")
-	if len(geohash) < 5 || len(biggest) < 1 || len(radius) < 2 || len(creator) < 5 {
+	if len(geohash) < 5 || len(biggest) < 1 || len(radius) < 1 || len(creator) < 5 {
 		jsonres := JsonResponse{1, "argument error"}
 		b, _ := json.Marshal(jsonres)
 		io.WriteString(w, string(b))
