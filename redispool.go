@@ -366,10 +366,13 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 	var nresponse ByFuwagid
 	var fresponse ByFuwagid
 
+	if radius > 10000 {
+		radius = 10000
+	}
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
 	if err != nil {
-		// handle error
+		return result
 	}
 
 	r := conn.Cmd("AUTH", "aaa11bbb22")
@@ -457,10 +460,13 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 	var nresponse ByFuwagid
 	var fresponse ByFuwagid
 
+	if radius > 10000 {
+		radius = 10000
+	}
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
 	if err != nil {
-		// handle error
+		return result
 	}
 
 	r := conn.Cmd("AUTH", "aaa11bbb22")
