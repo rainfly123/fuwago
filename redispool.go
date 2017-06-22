@@ -97,7 +97,7 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 		results = append(results, temp)
 	}
 
-	r = conn.Cmd("GEORADIUS", "video_g_"+classid, longitude, latitude, 10000, "m", "withdist", "count", "100", "ASC")
+	r = conn.Cmd("GEORADIUS", "video_g_"+classid, longitude, latitude, 5000, "m", "withdist", "count", "100", "ASC")
 	posa, _ = r.Array()
 	for _, elem := range posa {
 		var had bool
@@ -148,7 +148,7 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 		results = append(results, temp)
 	}
 
-	r = conn.Cmd("GEORADIUS", "video_g_i", longitude, latitude, 10000, "m", "withdist", "count", "100", "ASC")
+	r = conn.Cmd("GEORADIUS", "video_g_i", longitude, latitude, 5000, "m", "withdist", "count", "100", "ASC")
 	posa, _ = r.Array()
 	for _, elem := range posa {
 		var had bool
