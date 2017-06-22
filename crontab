@@ -1,0 +1,11 @@
+*/1 * * * * cd /www/html/fuwa/ && ./snap.sh
+*/1 * * * * cd /www/html/fuwa/ && ./mp4snap.sh
+*/1 * * * * sleep 30 && cd /www/html/fuwa/ && ./snap.sh
+*/1 * * * * sleep 30 && cd /www/html/fuwa/ && ./mp4snap.sh
+*/5 * * * * cd /root/fuwa/msg && /usr/bin/python yuhe.py
+3 2 * * * yiipay alitransfer/index
+*/15 * * * * cd /root/nfuwa/ && /usr/bin/python genew.py
+5 2 * * * cd /root/nfuwa/ && /usr/bin/python clrlmt.py
+#*/50 * * * * qrsctl  login 363236498@qq.com 7niu_66boss
+9 2 * * * cp -f  /var/lib/redis/6379/dump.rdb /www/html/dump.rdb
+
