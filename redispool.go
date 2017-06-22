@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/mediocregopher/radix.v2/pool"
-	//"github.com/mediocregopher/radix.v2/redis"
+	"github.com/mediocregopher/radix.v2/redis"
 	//"encoding/json"
 	"math"
 	"sort"
@@ -24,7 +24,7 @@ func InitRedis() {
 		}
 		return client, nil
 	}
-	Clients, err := pool.NewCustom("tcp", "127.0.0.1:6379", 10, df)
+	Clients, _ = pool.NewCustom("tcp", "127.0.0.1:6379", 10, df)
 }
 
 func EarthDistance(lat1, lng1, lat2, lng2 float64) int {
