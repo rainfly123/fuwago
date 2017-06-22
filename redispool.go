@@ -381,7 +381,7 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 		if c != creator {
 			continue
 		}
-		howfar, _ := strconv.ParseFloat(temp[0], 32)
+		howfar, _ := strconv.ParseFloat(temp[1], 32)
 		if howfar < HOWFAR {
 			fuwagidn, _ := strconv.Atoi(temp[0][7:])
 			if fuwagidn < biggest && len(nresponse) <= 100 {
