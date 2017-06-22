@@ -13,12 +13,18 @@ import (
 var Clients *pool.Pool
 
 func InitRedis() {
-	var err error
-	Clients, err = pool.New("tcp", "localhost:6379", 10)
-	if err != nil {
-		// handle error
+	df := func(network, addr string) (*redis.Client, error) {
+		client, err := redis.Dial(network, addr)
+		if err != nil {
+			return nil, err
+		}
+		if err = client.Cmd("AUTH", "aaa11bbb22").Err; err != nil {
+			client.Close()
+			return nil, err
+		}
+		return client, nil
 	}
-
+	Clients, err := pool.NewCustom("tcp", "127.0.0.1:6379", 10, df)
 }
 
 func EarthDistance(lat1, lng1, lat2, lng2 float64) int {
@@ -74,10 +80,9 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 	var results []VideoResp
 	conn, err := Clients.Get()
 	if err != nil {
-		// handle error
+		return results
 	}
-	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("ZREVRANGE", "video_"+classid, 0, 4)
+	r := conn.Cmd("ZREVRANGE", "video_"+classid, 0, 4)
 	filemd5s, _ := r.List()
 	total := len(filemd5s)
 	distances := make(map[int]string, 5)
@@ -125,10 +130,9 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 	var results []VideoResp
 	conn, err := Clients.Get()
 	if err != nil {
-		// handle error
+		return results
 	}
-	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("ZREVRANGE", "video_i", 0, 4)
+	r := conn.Cmd("ZREVRANGE", "video_i", 0, 4)
 	filemd5s, _ := r.List()
 	total := len(filemd5s)
 	distances := make(map[int]string, 5)
@@ -197,11 +201,10 @@ func QueryV2(longitude, latitude float64, radius uint32, biggest int) map[string
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
 	if err != nil {
-		// handle error
+		return result
 	}
 
-	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist", "count", "500")
+	r := conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist", "count", "500")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
@@ -283,11 +286,10 @@ func QueryStrV2(longitude, latitude float64, radius uint32, biggest int) map[str
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
 	if err != nil {
-		// handle error
+		return result
 	}
 
-	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist", "count", "500")
+	r := conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist", "count", "500")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
@@ -375,8 +377,7 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 		return result
 	}
 
-	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist")
+	r := conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
@@ -469,8 +470,7 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 		return result
 	}
 
-	r := conn.Cmd("AUTH", "aaa11bbb22")
-	r = conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist")
+	r := conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
