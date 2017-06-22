@@ -19,8 +19,6 @@ func InitRedis() {
 			return nil, err
 		}
 		if err = client.Cmd("AUTH", "aaa11bbb22").Err; err != nil {
-			client.Close()
-			return nil, err
 		}
 		return client, nil
 	}
