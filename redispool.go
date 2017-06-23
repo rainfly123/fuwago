@@ -76,14 +76,16 @@ type farFuwa struct {
 
 func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 	var results []VideoResp
+	var nearvideo []string
+	var distances []string
+
 	conn, err := Clients.Get()
 	if err != nil {
 		return results
 	}
-	r := conn.Cmd("ZREVRANGE", "video_"+classid, 0, 4)
+	r := conn.Cmd("ZREVRANGE", "video_"+classid, 0, 9)
 	filemd5s, _ := r.List()
 	total := len(filemd5s)
-	distances := make(map[int]string, 5)
 	r = conn.Cmd("GEOPOS", "video_g_"+classid, filemd5s)
 	posa, _ := r.Array()
 	for i, elem := range posa {
@@ -91,9 +93,12 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 		lonti, _ := strconv.ParseFloat(pos[0], 32)
 		lati, _ := strconv.ParseFloat(pos[1], 32)
 		dis := EarthDistance(lati, lonti, latitude, longitude)
-		distances[i] = strconv.Itoa(dis)
+		if dis <= 5000 {
+			distances = append(distances, strconv.Itoa(dis))
+			nearvideo = append(nearvideo, filemd5s[i])
+		}
 	}
-	for i, filemd5 := range filemd5s {
+	for i, filemd5 := range nearvideo {
 		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
 		resp, _ := r.List()
 		temp := VideoResp{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], distances[i], filemd5}
@@ -126,14 +131,15 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 
 func QueryStrVideo(longitude, latitude float64) []VideoResp {
 	var results []VideoResp
+	var nearvideo []string
+	var distances []string
+
 	conn, err := Clients.Get()
 	if err != nil {
 		return results
 	}
-	r := conn.Cmd("ZREVRANGE", "video_i", 0, 4)
+	r := conn.Cmd("ZREVRANGE", "video_i", 0, 9)
 	filemd5s, _ := r.List()
-	total := len(filemd5s)
-	distances := make(map[int]string, 5)
 	r = conn.Cmd("GEOPOS", "video_g_i", filemd5s)
 	posa, _ := r.Array()
 	for i, elem := range posa {
@@ -141,9 +147,13 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 		lonti, _ := strconv.ParseFloat(pos[0], 32)
 		lati, _ := strconv.ParseFloat(pos[1], 32)
 		dis := EarthDistance(lati, lonti, latitude, longitude)
-		distances[i] = strconv.Itoa(dis)
+		if dis <= 5000 {
+			distances = append(distances, strconv.Itoa(dis))
+			nearvideo = append(nearvideo, filemd5s[i])
+		}
 	}
-	for i, filemd5 := range filemd5s {
+	total := len(nearvideo)
+	for i, filemd5 := range nearvideo {
 		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
 		resp, _ := r.List()
 		temp := VideoResp{resp[0], resp[1], resp[2], resp[3], resp[4], resp[5], resp[6], distances[i], filemd5}
