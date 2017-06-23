@@ -366,8 +366,8 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 	var nresponse ByFuwagid
 	var fresponse ByFuwagid
 
-	if radius > 10000 {
-		radius = 10000
+	if radius > 5100 {
+		radius = 5100
 	}
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
@@ -459,8 +459,8 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 	var nresponse ByFuwagid
 	var fresponse ByFuwagid
 
-	if radius > 10000 {
-		radius = 10000
+	if radius > 5100 {
+		radius = 5100
 	}
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
