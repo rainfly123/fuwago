@@ -98,6 +98,17 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 		}
 	}
 	total := len(nearvideo)
+	if total == 0 {
+		for i, elem := range posa {
+			pos, _ := elem.List()
+			lonti, _ := strconv.ParseFloat(pos[0], 32)
+			lati, _ := strconv.ParseFloat(pos[1], 32)
+			dis := EarthDistance(lati, lonti, latitude, longitude)
+			distances = append(distances, strconv.Itoa(dis))
+			nearvideo = append(nearvideo, filemd5s[i])
+		}
+	}
+	total := len(nearvideo)
 	for i, filemd5 := range nearvideo {
 		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
 		resp, _ := r.List()
@@ -153,6 +164,18 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 		}
 	}
 	total := len(nearvideo)
+	if total == 0 {
+		for i, elem := range posa {
+			pos, _ := elem.List()
+			lonti, _ := strconv.ParseFloat(pos[0], 32)
+			lati, _ := strconv.ParseFloat(pos[1], 32)
+			dis := EarthDistance(lati, lonti, latitude, longitude)
+			distances = append(distances, strconv.Itoa(dis))
+			nearvideo = append(nearvideo, filemd5s[i])
+		}
+	}
+	total := len(nearvideo)
+
 	for i, filemd5 := range nearvideo {
 		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
 		resp, _ := r.List()
