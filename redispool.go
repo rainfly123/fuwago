@@ -85,7 +85,6 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 	}
 	r := conn.Cmd("ZREVRANGE", "video_"+classid, 0, 9)
 	filemd5s, _ := r.List()
-	total := len(filemd5s)
 	r = conn.Cmd("GEOPOS", "video_g_"+classid, filemd5s)
 	posa, _ := r.Array()
 	for i, elem := range posa {
@@ -98,6 +97,7 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 			nearvideo = append(nearvideo, filemd5s[i])
 		}
 	}
+	total := len(nearvideo)
 	for i, filemd5 := range nearvideo {
 		r = conn.Cmd("HMGET", filemd5, "name", "gender", "avatar", "userid", "video", "width", "height")
 		resp, _ := r.List()
