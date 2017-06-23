@@ -272,6 +272,7 @@ func QueryV2(longitude, latitude float64, radius uint32, biggest int) map[string
 	}
 	result["near"] = nearfuwa
 	result["far"] = farfuwa
+	defer Clients.Put(conn)
 	return result
 }
 
@@ -357,6 +358,7 @@ func QueryStrV2(longitude, latitude float64, radius uint32, biggest int) map[str
 	}
 	result["near"] = nearfuwa
 	result["far"] = farfuwa
+	defer Clients.Put(conn)
 	return result
 }
 
@@ -449,8 +451,8 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 	}
 	result["near"] = nearfuwa
 	result["far"] = farfuwa
+	defer Clients.Put(conn)
 	return result
-
 }
 
 func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator string) map[string]interface{} {
@@ -542,6 +544,7 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 	}
 	result["near"] = nearfuwa
 	result["far"] = farfuwa
+	defer Clients.Put(conn)
 	return result
 }
 
