@@ -409,14 +409,10 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 		return result
 	}
 
-	r := conn.Cmd("GEORADIUS", "fuwa_c_"+creator, longitude, latitude, radius, "m", "withdist")
+	r := conn.Cmd("GEORADIUS", "fuwa_c_"+creator, longitude, latitude, radius, "m", "withdist", "count", "500")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
-		c, _ := conn.Cmd("HGET", temp[0], "creator").Str()
-		if c != creator {
-			continue
-		}
 		howfar, _ := strconv.ParseFloat(temp[1], 32)
 		if howfar < HOWFAR {
 			fuwagidn, _ := strconv.Atoi(temp[0][7:])
@@ -502,14 +498,10 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 		return result
 	}
 
-	r := conn.Cmd("GEORADIUS", "fuwa_i_"+creator, longitude, latitude, radius, "m", "withdist")
+	r := conn.Cmd("GEORADIUS", "fuwa_i_"+creator, longitude, latitude, radius, "m", "withdist", "count", "500")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
-		c, _ := conn.Cmd("HGET", temp[0], "creator").Str()
-		if c != creator {
-			continue
-		}
 		howfar, _ := strconv.ParseFloat(temp[1], 32)
 		if howfar < HOWFAR {
 			fuwagidn, _ := strconv.Atoi(temp[0][7:])
