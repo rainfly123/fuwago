@@ -409,7 +409,7 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 		return result
 	}
 
-	r := conn.Cmd("GEORADIUS", "fuwa_c", longitude, latitude, radius, "m", "withdist")
+	r := conn.Cmd("GEORADIUS", "fuwa_c_"+creator, longitude, latitude, radius, "m", "withdist")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
@@ -502,7 +502,7 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 		return result
 	}
 
-	r := conn.Cmd("GEORADIUS", "fuwa_i", longitude, latitude, radius, "m", "withdist")
+	r := conn.Cmd("GEORADIUS", "fuwa_i_"+creator, longitude, latitude, radius, "m", "withdist")
 	nelem, _ := r.Array()
 	for _, elem := range nelem {
 		temp, _ := elem.List()
