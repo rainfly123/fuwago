@@ -92,7 +92,7 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 		lonti, _ := strconv.ParseFloat(pos[0], 32)
 		lati, _ := strconv.ParseFloat(pos[1], 32)
 		dis := EarthDistance(lati, lonti, latitude, longitude)
-		if dis <= 5000 {
+		if dis <= 10000 {
 			distances = append(distances, strconv.Itoa(dis))
 			nearvideo = append(nearvideo, filemd5s[i])
 		}
@@ -116,7 +116,7 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 		results = append(results, temp)
 	}
 
-	r = conn.Cmd("GEORADIUS", "video_g_"+classid, longitude, latitude, 5000, "m", "withdist", "count", "100", "ASC")
+	r = conn.Cmd("GEORADIUS", "video_g_"+classid, longitude, latitude, 10000, "m", "withdist", "count", "100", "ASC")
 	posa, _ = r.Array()
 	for _, elem := range posa {
 		var had bool
@@ -158,7 +158,7 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 		lonti, _ := strconv.ParseFloat(pos[0], 32)
 		lati, _ := strconv.ParseFloat(pos[1], 32)
 		dis := EarthDistance(lati, lonti, latitude, longitude)
-		if dis <= 5000 {
+		if dis <= 10000 {
 			distances = append(distances, strconv.Itoa(dis))
 			nearvideo = append(nearvideo, filemd5s[i])
 		}
@@ -182,7 +182,7 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 		results = append(results, temp)
 	}
 
-	r = conn.Cmd("GEORADIUS", "video_g_i", longitude, latitude, 5000, "m", "withdist", "count", "100", "ASC")
+	r = conn.Cmd("GEORADIUS", "video_g_i", longitude, latitude, 10000, "m", "withdist", "count", "100", "ASC")
 	posa, _ = r.Array()
 	for _, elem := range posa {
 		var had bool
@@ -400,8 +400,8 @@ func QueryV3(longitude, latitude float64, radius uint32, biggest int, creator st
 	var nresponse ByFuwagid
 	var fresponse ByFuwagid
 
-	if radius > 5100 {
-		radius = 5100
+	if radius > 10000 {
+		radius = 10000
 	}
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
@@ -493,8 +493,8 @@ func QueryStrV3(longitude, latitude float64, radius uint32, biggest int, creator
 	var nresponse ByFuwagid
 	var fresponse ByFuwagid
 
-	if radius > 5100 {
-		radius = 5100
+	if radius > 10000 {
+		radius = 10000
 	}
 	result := make(map[string]interface{}, 2)
 	conn, err := Clients.Get()
