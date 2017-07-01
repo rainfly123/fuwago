@@ -83,7 +83,7 @@ func QueryVideo(longitude, latitude float64, classid string) []VideoResp {
 	if err != nil {
 		return results
 	}
-	r := conn.Cmd("ZREVRANGE", "video_"+classid, 0, 9)
+	r := conn.Cmd("ZREVRANGE", "video_"+classid, 0, 19)
 	filemd5s, _ := r.List()
 	r = conn.Cmd("GEOPOS", "video_g_"+classid, filemd5s)
 	posa, _ := r.Array()
@@ -149,7 +149,7 @@ func QueryStrVideo(longitude, latitude float64) []VideoResp {
 	if err != nil {
 		return results
 	}
-	r := conn.Cmd("ZREVRANGE", "video_i", 0, 9)
+	r := conn.Cmd("ZREVRANGE", "video_i", 0, 19)
 	filemd5s, _ := r.List()
 	r = conn.Cmd("GEOPOS", "video_g_i", filemd5s)
 	posa, _ := r.Array()
