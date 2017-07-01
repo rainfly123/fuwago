@@ -49,8 +49,8 @@ type VideoResp struct {
 	Filemd5  string `json:"filemd5"`
 }
 type Fuwa struct {
-	Pos       string  `json:"pos"`
 	Detail    string  `json:"detail"`
+	Pos       string  `json:"pos"`
 	Pic       string  `json:"pic"`
 	Name      string  `json:"name"`
 	Avatar    string  `json:"avatar"`
